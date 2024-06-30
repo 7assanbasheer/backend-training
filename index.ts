@@ -1,10 +1,10 @@
 import express from "express";
+import { collection, addDoc, getDocs } from "firebase/firestore";
+import { db } from "./firebase";
 
 const app = express();
 
 app.use(express.json());
-
-const users = [];
 
 app.get("/", (req, res) => {
   res.send({
@@ -25,16 +25,25 @@ app.get("/person/:name", (req, res) => {
   });
 });
 
-app.post("/signup", (req, res) => {
+app.post("/signup", async (req, res) => {
   const username = req.body.username;
 
   const email = req.body.email;
   const password = req.body.password;
 
-  if (users.filter((user) => user.username === username).length > 0)
-    return res.status(400).send({ message: "user already exist" });
+  //  if (users.filter((user) => user.username === username).length > 0)
+  //   return res.status(400).send({ message: "user already exist" });
 
-  users.push({ username, email, password });
+  await addDoc(collection(db, "users"), {
+    username,
+    password,
+    email,
+  });
+
+  const querySnapshot = await getDocs(collection(db, "users"));
+  querySnapshot.forEach((doc) => {
+    console.log(`${doc.id} => ${doc.data()}`);
+  });
 
   res.send({ message: "created" });
 });
