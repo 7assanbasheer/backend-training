@@ -30,13 +30,13 @@ app.post("/signup", (req, res) => {
 
   const email = req.body.email;
   const password = req.body.password;
-  console.log({
-    username,
-    email,
-    password,
-  });
 
-  res.send();
+  if (users.filter((user) => user.username === username).length > 0)
+    return res.status(400).send({ message: "user already exist" });
+
+  users.push({ username, email, password });
+
+  res.send({ message: "created" });
 });
 
 app.listen(3000);
