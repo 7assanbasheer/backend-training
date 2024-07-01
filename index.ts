@@ -1,9 +1,12 @@
 import express from "express";
-import { collection, addDoc, getDocs } from "firebase/firestore";
+import { collection, addDoc, getDocs, where, query } from "firebase/firestore";
+import cors from "cors";
+
 import { db } from "./firebase";
 
 const app = express();
 
+app.use(cors());
 app.use(express.json());
 
 app.get("/", (req, res) => {
@@ -26,13 +29,19 @@ app.get("/person/:name", (req, res) => {
 });
 
 app.post("/signup", async (req, res) => {
+  console.log(req.body);
+
   const username = req.body.username;
 
   const email = req.body.email;
   const password = req.body.password;
 
-  //  if (users.filter((user) => user.username === username).length > 0)
-  //   return res.status(400).send({ message: "user already exist" });
+  const q = query(collection(db, "users"), where("username", "==", username));
+  const userExist = await getDocs(q);
+
+  if (!userExist.empty) {
+    return res.status(400).send({ message: "user already exist" });
+  }
 
   await addDoc(collection(db, "users"), {
     username,
@@ -48,4 +57,4 @@ app.post("/signup", async (req, res) => {
   res.send({ message: "created" });
 });
 
-app.listen(3000);
+app.listen(8000);
